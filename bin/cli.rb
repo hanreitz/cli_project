@@ -18,11 +18,11 @@ class CLI
                 alcoholic_prompt
                 alc_input = gets.strip
                 if alc_input == "1"
-                    ingredients
+                    ingredients.each.with_index {|v,i| puts "#{i+1}. #{v}"}
                     ingredient_select_prompt
-                    ing_input = gets.strip
-                    if ing_input.to_i > 0 && ing_input.to_i <= ingredients.length
-                        results = ingredient_search(ingredients[ing_input.to_i - 1])
+                    ing_num = gets.strip.to_i
+                    if ing_num > 0 && ing_num <= ingredients.length
+                        results = ingredient_search(ingredients[ing_num - 1])
                         see_and_save(results)
                     else
                         puts "That number isn't on the list."
@@ -72,50 +72,54 @@ class CLI
     end
 
     def prompt
-        puts ""
+        space
         puts "Press 1 for alcoholic drinks."
         puts "Press 2 for non-alcoholic drinks."
         puts "Press 3 to see your current menu."
         puts "Press 4 to clear your current menu."
         puts "Type exit to end the program."
-        puts ""
+        space
     end
 
     def alcoholic_prompt
-        puts ""
+        space
         puts "Press 1 to select an ingredient."
         puts "Press 2 for a random list of ten drinks."
         puts "Press enter to return to main menu."
-        puts ""
+        space
     end
 
     def non_alc_prompt
-        puts ""
+        space
         puts "Press 1 to search by ingredient."
         puts "Press 2 for a random list of ten drinks."
         puts "Press enter to return to main menu."
-        puts ""
+        space
     end
 
     def ingredient_select_prompt
-        puts ""
+        space
         puts "Type a number to see a list of drinks with that ingredient."
         puts "Press enter to return to main menu."
-        puts ""
+        space
     end
 
     def see_recipe_prompt
-        puts ""
+        space
         puts "Type a number to see the recipe for that drink."
         puts "Press enter to return to main menu."
-        puts ""
+        space
     end
 
     def save_prompt
-        puts ""
+        space
         puts "Press 1 to save this drink to your menu."
         puts "Press 2 to return to the list of drinks"
         puts "Press enter to return to main menu."
+        space
+    end
+
+    def space
         puts ""
     end
 
@@ -123,6 +127,7 @@ class CLI
         puts "Press enter to return to main menu."
         input = gets.strip
         if input != nil
+            system("clear")
             menu
         end
     end
@@ -130,9 +135,8 @@ class CLI
     def ingredients
         request = APIRequest.new('https://www.thecocktaildb.com/api/json/v1/1/list.php?i=list')
         results = request.parse_json
-        ingredients = results["drinks"]
-        ing_names = ingredients.collect {|d| d["strIngredient1"]}
-        ing_names.each.with_index {|v,i| puts "#{i+1}. #{v}"}
+        ingredient_list = results["drinks"]
+        ing_names = ingredient_list.collect {|d| d["strIngredient1"]}
     end
 
     def ingredient_search(ingredient)
@@ -148,25 +152,27 @@ class CLI
     end
 
     def view_recipe(drink)
-        drink_details = name_search(drink)
+        details = name_search(drink)
+        drink_details = details["drinks"][0]
         ingredient_list = []
         measure_list = []
-        instructions = []
-        drink_details["drinks"].each do |d|
-            i = 1
-            while d["strIngredient#{i}"] != nil
-                ingredient_list << d["strIngredient#{i}"]
-                measure_list << d["strMeasure#{i}"]
-                instructions << d["strInstructions"]
-                i += 1
+        recipe = []
+        drink_details.each do |key, value|
+            if value != nil
+                if key.include? "strIngredient"
+                    ingredient_list << value
+                end
+                if key.include? "strMeasure"
+                    measure_list << value
+                end
             end
         end
         i = 0
         while i < ingredient_list.length
-            puts "#{measure_list[i]} #{ingredient_list[i]}"
+            puts "#{measure_list[i]}#{ingredient_list[i]}"
             i += 1
         end
-        puts "#{instructions.uniq.to_s.gsub("[1]","")}"
+        puts drink_details["strInstructions"]
     end
 
     def see_and_save(drink_array)
@@ -211,10 +217,15 @@ class CLI
     end
 
     def view_menu
-        i = 1
-        while i <= @saved_drinks.length
-            puts "#{i}. #{@saved_drinks[i-1]}"
-            i += 1
+        if @saved_drinks.length == 0
+            puts "Your current menu is empty."
+            return_to_main
+        else
+            i = 1
+            while i <= @saved_drinks.length
+                puts "#{i}. #{@saved_drinks[i-1]}"
+                i += 1
+            end
         end
     end
 
