@@ -1,13 +1,12 @@
 # CLI-Project Drinkies
 
-# tl/dr "CLI that allows user to create, edit, and email drink menus based on data from TheCocktailDB API"
+## CLI that allows user to create, edit, and email drink menus based on data from TheCocktailDB API
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Installation Instructions:
     -bundle install
     -ruby bin/cli.rb
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 This program
     -Gets data from TheCocktailDB API via search, list, and filter features
     -Allows the user to filter by alcoholic/non-alcoholic drinks
@@ -20,7 +19,6 @@ This program
     -Allows the user to move back and forth between drink recipes and drink lists
     -Always gives the user the ability to return to the main menu
     -Attempts to provide a comfortable and intuitive user experience
-
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
 This project was written as a part of the Flatiron School program. It uses the free version of the API and is therefore limited to 100 drinks.
