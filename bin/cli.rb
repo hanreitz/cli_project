@@ -3,133 +3,305 @@ class CLI
     def initialize
         input = ""
         @saved_drinks = []
-        puts "***"
-        puts ""
-        puts "Welcome to Drinkies! Let's dream up a drink menu!"
+        clear
+        space
+        welcome_box = TTY::Box.frame "Welcome to Drinkies!", "Let's dream up a drink menu!", padding: 3, align: :center, title: {top_left: "DRINKIES", bottom_right: "v1.0"}
+        print welcome_box
+        sleep(1)
         menu
     end
 
     def menu
-        prompt
-        input = gets.strip.downcase
-        while input != "exit"
-            case input
-            when "1"
-                alcoholic_prompt
-                alc_input = gets.strip
-                if alc_input == "1"
-                    ingredients.each.with_index {|v,i| puts "#{i+1}. #{v}"}
-                    ingredient_select_prompt
-                    ing_num = gets.strip.to_i
-                    if ing_num > 0 && ing_num <= ingredients.length
-                        results = ingredient_search(ingredients[ing_num - 1])
+        space
+        input = main_prompt
+        case input
+            when 1
+                clear
+                space
+                alc_input = alcoholic_prompt
+                case alc_input
+                    when 1
+                        clear
+                        space
+                        ing_input = ingredient_select_prompt
+                        clear
+                        results = ingredient_search(ing_input)
                         see_and_save(results)
-                    else
-                        puts "That number isn't on the list."
+                    when 2
+                        clear
+                        see_and_save(random_alc_drx)
+                        menu
+                    when 3
                         return_to_main
-                    end
-                elsif alc_input == "2"
-                    see_and_save(random_alc_drx)
-                    menu
                 end
-            when "2"
-                non_alc_prompt
-                non_alc_input = gets.strip
-                if non_alc_input == "1"
-                    puts "Type an ingredient to search: "
-                    ing_input = gets.strip.capitalize
-                    ing_results = ingredient_search(ing_input)
-                    non_alc_drx = get_drx("Non_Alcoholic")
-                    non_alc_results = []
-                    ing_results.each do |drink|
-                        if non_alc_drx.include?(drink)
-                            non_alc_results << drink
+            when 2
+                non_alc_input = non_alc_prompt
+                case non_alc_input
+                    when 1
+                        clear
+                        puts "Type an ingredient to search: "
+                        ing_input = gets.strip.capitalize
+                        clear
+                        ing_results = ingredient_search(ing_input)
+                        non_alc_drx = get_drx("Non_Alcoholic")
+                        non_alc_results = []
+                        ing_results.each do |drink|
+                            if non_alc_drx.include?(drink)
+                                non_alc_results << drink
+                            end
                         end
-                    end
-                    non_alc_results
-                    if non_alc_results.length > 0
-                        see_and_save(non_alc_results)
-                        return_to_main
-                    else
-                        puts "That ingredient is not in the database."
-                        return_to_main
-                    end
-                elsif non_alc_input == "2"
-                    see_and_save(random_non_alc_drx)
+                        if non_alc_results.length > 0
+                            puts "Drinks containing #{ing_input.downcase}:"
+                            space
+                            see_and_save(non_alc_results)
+                            return_to_main
+                        else
+                            #error not available or something
+                            puts "That ingredient is not in the database."
+                            return_to_main
+                        end
+                    when 2
+                        clear
+                        see_and_save(random_non_alc_drx)
                 end
-            when "3"
+            when 3
+                clear
                 view_menu
-                return_to_main
-            when "4"
+                puts "Press enter to return to main menu."
+                view_input = gets.strip
+                if view_input == ""
+                    return_to_main
+                else
+                    #error handling
+                end
+            when 4
+                clear
                 clear_menu
                 return_to_main
-            end
-        end
-        if input == "exit"
-            puts "Thanks for using Drinkies! Have fun!"
-            exit
+            when 5
+                space
+                puts "Thanks for using Drinkies! Have fun!"
+                space
+                sleep(1.5)
+                clear
+                exit
         end
     end
 
+    #prompt and formatting objects 
+
     def prompt
-        space
-        puts "Press 1 for alcoholic drinks."
-        puts "Press 2 for non-alcoholic drinks."
-        puts "Press 3 to see your current menu."
-        puts "Press 4 to clear your current menu."
-        puts "Type exit to end the program."
-        space
+        prompt = TTY::Prompt.new
+    end
+
+    def main_prompt
+        prompt.select("Main Menu") do |menu|
+            menu.choice "Alcoholic Drinks", 1
+            menu.choice "Non-Alcoholic Drinks", 2
+            menu.choice "View Current Menu", 3
+            menu.choice "Clear Current Menu", 4
+            menu.choice "Exit Drinkies", 5
+        end
     end
 
     def alcoholic_prompt
-        space
-        puts "Press 1 to select an ingredient."
-        puts "Press 2 for a random list of ten drinks."
-        puts "Press enter to return to main menu."
-        space
+        prompt.select("Choose one of the following:") do |menu|
+            menu.choice "See a list of ingredients.", 1
+            menu.choice "See a random list of ten drinks.", 2
+            menu.choice "Return to main menu.", 3
+        end
     end
 
     def non_alc_prompt
-        space
-        puts "Press 1 to search by ingredient."
-        puts "Press 2 for a random list of ten drinks."
-        puts "Press enter to return to main menu."
-        space
+        prompt.select("Choose one of the following:") do |menu|
+            menu.choice "Search by ingredient.", 1
+            menu.choice "See a random list of ten drinks.", 2
+            menu.choice "Return to main menu.", 3
+        end
     end
 
     def ingredient_select_prompt
-        space
-        puts "Type a number to see a list of drinks with that ingredient."
-        puts "Press enter to return to main menu."
-        space
+        ing_menu = ["Return to main menu"]
+        ingredients.each {|ing| ing_menu << ing}
+        prompt.select("Choose one of the following:", ing_menu)
     end
 
-    def see_recipe_prompt
-        space
-        puts "Type a number to see the recipe for that drink."
-        puts "Press enter to return to main menu."
-        space
+    def see_recipe_prompt(results_of_ing_search)
+        cocktails = []
+        cocktails << results_of_ing_search
+        cocktails << "Return to main menu"
+        prompt.select("View a recipe below or return to the main menu:", cocktails)
     end
 
     def save_prompt
-        space
-        puts "Press 1 to save this drink to your menu."
-        puts "Press 2 to return to the list of drinks"
-        puts "Press enter to return to main menu."
-        space
+        prompt.select("Would you like to save this drink to your menu?") do |menu|
+            menu.choice "Save to menu", 1
+            menu.choice "Return to drink list", 2
+            menu.choice "Return to main menu", 3
+        end
+    end
+
+    def email_prompt
+        prompt.select("Where should we send your Drinkies menu?") do |menu|
+            menu.choice "To myself!", 1
+            menu.choice "To someone else...", 2
+            menu.choice "Nevermind, I want to go back to the main menu.", 3
+        end
+    end
+
+    def menu_empty
+        puts "Your current menu is empty."
     end
 
     def space
         puts ""
     end
 
+    def clear
+        system("clear")
+    end
+
     def return_to_main
-        puts "Press enter to return to main menu."
-        input = gets.strip
-        if input != nil
-            system("clear")
-            menu
+        clear
+        menu
+    end
+
+    def valid_email(email)
+        email =~ URI::MailTo::EMAIL_REGEXP
+    end
+
+    #objects created with user input + API results
+
+    def random_alc_drx
+        randoms = get_drx("Alcoholic").sample(10)
+    end
+
+    def random_non_alc_drx
+        randoms = get_drx("Non_Alcoholic").sample(10)
+    end
+
+    def see_and_save(results)
+        recipe_input = see_recipe_prompt(results)
+        if recipe_input != "Return to main menu"
+            view_recipe(recipe_input)
+            save_input = save_prompt
+            case save_input
+            when 1
+                save_to_menu(recipe_input)
+                puts "#{recipe_input.capitalize} has been saved to your menu!"
+                sleep(1)
+                return_to_main
+            when 2
+                clear
+                see_and_save(results)
+            when 3
+                return_to_main
+            end
+        elsif recipe_input == "Return to main menu"
+            return_to_main
         end
+    end
+    
+    def view_recipe(drink)
+        clear
+        details = name_search(drink)
+        drink_details = details["drinks"][0]
+        ingredient_list = []
+        measure_list = []
+        recipe = []
+        drink_details.each do |key, value|
+            if value != nil
+                if key.include? "strIngredient"
+                    ingredient_list << value
+                end
+                if key.include? "strMeasure"
+                    measure_list << value
+                end
+            end
+        end
+        i = 0
+        space
+        puts "#{drink}"
+        space
+        puts "Ingredients"
+        space
+        while i < ingredient_list.length
+            puts "#{measure_list[i]}#{ingredient_list[i]}"
+            i += 1
+        end
+        space
+        puts "Method"
+        space
+        puts drink_details["strInstructions"]
+        space
+    end
+
+    def save_to_menu(drink)
+        @saved_drinks << drink
+        @saved_drinks
+    end
+
+    def view_menu
+        if @saved_drinks.length == 0
+            space
+            menu_empty
+            space
+        else
+            i = 1
+            space
+            puts "Current Menu:"
+            space
+            while i <= @saved_drinks.length
+                puts "#{i}. #{@saved_drinks[i-1]}"
+                i += 1
+            end
+            space
+        end
+    end
+
+    def clear_menu
+        puts "Are you sure you want to clear the menu? Press 1 to proceed."
+        puts "Otherwise, press enter to return to the main menu."
+        input = gets.strip
+        if input == "1"
+            @saved_drinks.clear
+            space
+            menu_empty
+            space
+        elsif input == ""
+            return_to_main
+        else 
+            #error handling
+        end
+    end
+
+    def email_menu
+        email_input = email_prompt
+        case email_input
+        when 1
+            puts "Please enter your email address:"
+            self_address_input = gets.strip
+            if valid_email(self_address_input)
+                mail = Mail.new do
+                    from "#{self_address_input}"
+                    to "#{self_address_input}"
+                    subject "Drinkies Menu"
+                    body "#{view_menu}"
+                end
+            end
+        when 2
+
+        when 3
+            return_to_main
+        end
+    end
+
+    #API request objects
+
+    def get_drx(filter)
+        request = APIRequest.new("https://www.thecocktaildb.com/api/json/v1/1/filter.php?a=#{filter}")
+        results = request.parse_json
+        drinkies = results["drinks"].collect {|d| d["strDrink"]}.to_a
     end
 
     def ingredients
@@ -149,94 +321,6 @@ class CLI
     def name_search(name)
         request = APIRequest.new("https://www.thecocktaildb.com/api/json/v1/1/search.php?s=#{name}")
         details = request.parse_json
-    end
-
-    def view_recipe(drink)
-        details = name_search(drink)
-        drink_details = details["drinks"][0]
-        ingredient_list = []
-        measure_list = []
-        recipe = []
-        drink_details.each do |key, value|
-            if value != nil
-                if key.include? "strIngredient"
-                    ingredient_list << value
-                end
-                if key.include? "strMeasure"
-                    measure_list << value
-                end
-            end
-        end
-        i = 0
-        while i < ingredient_list.length
-            puts "#{measure_list[i]}#{ingredient_list[i]}"
-            i += 1
-        end
-        puts drink_details["strInstructions"]
-    end
-
-    def see_and_save(drink_array)
-        drink_array.each.with_index {|v,i| puts "#{i+1}. #{v}"}
-        see_recipe_prompt
-        answer = gets.strip.downcase
-        if answer.to_i >0 && answer.to_i <= drink_array.length
-            view_recipe(drink_array[answer.to_i - 1])
-            save_prompt
-            save_answer = gets.strip
-            if save_answer == "1"
-                save_to_menu(drink_array[answer.to_i - 1])
-                puts "#{drink_array[answer.to_i - 1]} has been saved to your menu!"
-                return_to_main
-            elsif save_answer == "2"
-                see_and_save(drink_array)
-            else
-                return_to_main
-            end
-        else
-            return_to_main
-        end
-    end
-
-    def save_to_menu(drink)
-        @saved_drinks << drink
-        @saved_drinks
-    end
-
-    def random_alc_drx
-        randoms = get_drx("Alcoholic").sample(10)
-    end
-
-    def random_non_alc_drx
-        randoms = get_drx("Non_Alcoholic").sample(10)
-    end
-
-    def get_drx(filter)
-        request = APIRequest.new("https://www.thecocktaildb.com/api/json/v1/1/filter.php?a=#{filter}")
-        results = request.parse_json
-        drinkies = results["drinks"].collect {|d| d["strDrink"]}.to_a
-    end
-
-    def view_menu
-        if @saved_drinks.length == 0
-            puts "Your current menu is empty."
-            return_to_main
-        else
-            i = 1
-            while i <= @saved_drinks.length
-                puts "#{i}. #{@saved_drinks[i-1]}"
-                i += 1
-            end
-        end
-    end
-
-    def clear_menu
-        puts "Are you sure you want to clear the menu? Press 1 to proceed."
-        puts "Otherwise, press any key to return to the main menu."
-        input = gets.strip
-        if input == "1"
-            @saved_drinks.clear
-            puts "Your current menu is empty."
-        end
     end
 
 end
