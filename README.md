@@ -7,6 +7,7 @@ Installation Instructions:
     -bundle install
     -ruby bin/cli.rb
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 This program
     -Gets data from TheCocktailDB API via search, list, and filter features
     -Allows the user to filter by alcoholic/non-alcoholic drinks
