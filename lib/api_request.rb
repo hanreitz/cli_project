@@ -10,6 +10,7 @@ class APIRequest
     end
 
     def get_response_body
+        @url = URI.escape(@url) unless @url.ascii_only?
         uri = URI.parse(@url)
         response = Net::HTTP.get_response(uri)
         response.body
