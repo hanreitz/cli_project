@@ -8,18 +8,19 @@ Installation Instructions:
     -ruby bin/cli.rb
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-This program
-    -Gets data from TheCocktailDB API via search, list, and filter features
-    -Allows the user to filter by alcoholic/non-alcoholic drinks
-    -Allows the user to search for specific ingredients or ask for a list of random drinks
-    -Allows the user to add drinks to a menu
-    -Allows the user to clear the menu
-    -Allows the user to email their menu to self or another person
-    -Handles many potential menu errors with errorless menus from tty-prompt
-    -Offers some ability to save data through the email function (since there is no working backend)
-    -Allows the user to move back and forth between drink recipes and drink lists
-    -Always gives the user the ability to return to the main menu
-    -Attempts to provide a comfortable and intuitive user experience
+This program allows the user to
+    -Access data from TheCocktailDB API via search, list, and filter features
+    -Filter by alcoholic/non-alcoholic drinks
+    -Search for specific ingredients
+    -Ask for a list of random drinks
+    -View drink recipe(s)
+    -Move back and forth between drink recipes and drink lists
+    -Add drinks to a drink menu
+    -View their drink menu
+    -Clear the drink menu 
+    -Avoid the hassle of many errors with errorless menus from tty-prompt
+    -Return to the main menu
+    -Create a drink menu in a comfortable, intuitive environment!
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
 This project was written as a part of the Flatiron School program. It uses the free version of the API and is therefore limited to 100 drinks.
