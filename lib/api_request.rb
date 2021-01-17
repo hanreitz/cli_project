@@ -1,7 +1,4 @@
-require 'open-uri'
-require 'net/http'
-require 'json'
-
+module Drinkies
 class APIRequest
     attr_accessor :url
 
@@ -20,4 +17,5 @@ class APIRequest
         JSON.parse(self.get_response_body)
     end
 
+end
 end
