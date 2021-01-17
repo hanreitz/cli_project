@@ -364,7 +364,7 @@ class CLI
             space
             input = gets.strip
             if input == "1"
-                @saved_drinks.clear
+                Drink.menu.clear
                 space
                 menu_empty
                 space
